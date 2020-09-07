@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -121,6 +122,7 @@ func (e *Encoder) encode() {
 			encodedFile += e.Bitmap[string(c)]
 		}
 	}
+	//fmt.Println(len(encodedFile), encodedFile)
 
 	//first 8 bits (1 byte) of file will be number of encoded data pairs
 	numNodes := uint8(len(e.List))
@@ -139,6 +141,24 @@ func (e *Encoder) encode() {
 	//next 8 bits of file will be length of padding of last byte written to file
 	var difference uint8 = uint8(8 - (len(encodedFile) % 8))
 	binary.Write(outf, binary.LittleEndian, difference)
+
+	var binRep uint8
+	var firstByte string
+	for len(encodedFile) > 0 {
+		if len(encodedFile) >= 8 {
+			firstByte = encodedFile[0:8]
+			res, _ := strconv.ParseUint(firstByte, 2, 8)
+			binRep = uint8(res)
+			encodedFile = encodedFile[8:]
+		} else {
+			firstByte = encodedFile[0:len(encodedFile)]
+			res, _ := strconv.ParseUint(firstByte, 2, 8)
+			binRep = uint8(res)
+			encodedFile = ""
+		}
+		//fmt.Println(firstByte, binRep)
+		binary.Write(outf, binary.LittleEndian, binRep)
+	}
 }
 
 func (e *Encoder) recHelper(node *Node, built string) {

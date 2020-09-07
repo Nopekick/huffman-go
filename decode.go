@@ -59,8 +59,30 @@ func (d *Decoder) recoverTree() {
 	var difference uint8
 	binary.Read(file, binary.LittleEndian, &difference)
 
+	//get file contents as binary string
+	content := ""
+	var numRep uint8
+	for {
+		if err = binary.Read(file, binary.LittleEndian, &numRep); err != nil {
+			break
+		} else {
+			num := fmt.Sprintf("%08b", numRep)
+			content += num
+			//fmt.Println(num, numRep)
+		}
+	}
+	//fmt.Println(len(content), content)
 }
 
 func (d *Decoder) decode() {
 
+}
+
+func PadLeft(str, pad string, length int) string {
+	for {
+		str = pad + str
+		if len(str) > length {
+			return str[0:length]
+		}
+	}
 }
