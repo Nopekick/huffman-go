@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/binary"
 	"fmt"
+	"io"
 	"os"
 	"sort"
 )
@@ -58,6 +59,7 @@ func (d *Decoder) recoverTree() {
 	//get padding length
 	var difference uint8
 	binary.Read(file, binary.LittleEndian, &difference)
+	d.Padding = int(difference)
 
 	//get file contents as binary string
 	content := ""
@@ -71,18 +73,47 @@ func (d *Decoder) recoverTree() {
 			//fmt.Println(num, numRep)
 		}
 	}
+	d.Content = content
 	//fmt.Println(len(content), content)
 }
 
 func (d *Decoder) decode() {
+	var buildOutput, content string
 
-}
-
-func PadLeft(str, pad string, length int) string {
-	for {
-		str = pad + str
-		if len(str) > length {
-			return str[0:length]
-		}
+	//substract padding from beginning of last byte of binary file content
+	lastByte := d.Content[len(d.Content)-8:]
+	if d.Padding != 8 {
+		lastByte = lastByte[d.Padding:]
 	}
+	content = d.Content[0:len(d.Content)-8] + string(lastByte)
+
+	pos := 0
+	temp := d.Head
+	for pos < len(content) {
+		if content[pos] == '0' {
+			if temp.Left != nil {
+				temp = temp.Left
+				if temp.Left == nil && temp.Right == nil {
+					buildOutput += temp.Character
+					temp = d.Head
+				}
+			}
+		} else if content[pos] == '1' {
+			if temp.Right != nil {
+				temp = temp.Right
+				if temp.Left == nil && temp.Right == nil {
+					buildOutput += temp.Character
+					temp = d.Head
+				}
+			}
+		}
+		pos++
+	}
+	fmt.Println(buildOutput)
+	output, _ := os.Create(d.OutputFile)
+	_, err := io.WriteString(output, buildOutput)
+	if err != nil {
+		fmt.Println(err)
+	}
+	output.Close()
 }

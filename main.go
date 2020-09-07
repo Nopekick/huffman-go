@@ -32,6 +32,7 @@ func main() {
 			Content:    "",
 		}
 		decoder.recoverTree()
+		decoder.decode()
 	} else {
 		printUsage()
 	}
