@@ -37,7 +37,6 @@ func (d *Decoder) recoverTree() {
 		//fmt.Println(char, frequency)
 		list = append(list, &Node{Character: string(char), Frequency: int(frequency)})
 	}
-	sort.Sort(nodeArr(list))
 
 	//generate Huffman tree
 	var least1, least2 *Node
@@ -109,7 +108,7 @@ func (d *Decoder) decode() {
 		}
 		pos++
 	}
-	fmt.Println(buildOutput)
+	//fmt.Println(buildOutput)
 	output, _ := os.Create(d.OutputFile)
 	_, err := io.WriteString(output, buildOutput)
 	if err != nil {

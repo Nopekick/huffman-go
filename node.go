@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type Node struct {
 	Character string
 	Frequency int
@@ -17,4 +19,10 @@ func (n nodeArr) Swap(i, j int) {
 }
 func (n nodeArr) Less(i, j int) bool {
 	return n[j].Frequency < n[i].Frequency
+}
+
+func PrintNodes(arr nodeArr) {
+	for _, node := range arr {
+		fmt.Println(node)
+	}
 }

@@ -135,7 +135,7 @@ func (e *Encoder) encode() {
 		freq := uint32(node.Frequency)
 		binary.Write(outf, binary.LittleEndian, char)
 		binary.Write(outf, binary.LittleEndian, freq)
-		//fmt.Println(char, freq)
+		//fmt.Println(string(char), freq)
 	}
 
 	//next 8 bits of file will be length of padding of last byte written to file
