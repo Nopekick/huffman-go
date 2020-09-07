@@ -14,3 +14,14 @@ See this implementation in C++: https://github.com/Nopekick/huffman
 
 ## Tests 
 
+Run
+```
+make
+```
+Optionally, run the 'encode' and 'decode' targets separately
+```
+make encode
+```
+```
+make decode
+```

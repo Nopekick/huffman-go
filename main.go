@@ -22,8 +22,16 @@ func main() {
 			List:       []*Node{},
 		}
 		encoder.generateTree()
+		encoder.encode()
+		printFileSize(fileArgs[1], fileArgs[2])
 	} else if fileArgs[0] == "-d" {
-		//decode input file, write to output file
+		decoder := Decoder{
+			InputFile:  fileArgs[1],
+			OutputFile: fileArgs[2],
+			Head:       nil,
+			Content:    "",
+		}
+		decoder.recoverTree()
 	} else {
 		printUsage()
 	}
@@ -35,4 +43,13 @@ func printUsage() {
 	fmt.Println("-e: encode the input-file, put encoded result into output-file")
 	fmt.Println("-d: decode the input-file, put decoded result into output-file")
 	os.Exit(1)
+}
+
+func printFileSize(in string, out string) {
+	input, _ := os.Stat(in)
+	output, _ := os.Stat(out)
+	//should probably add error checking here
+
+	fmt.Println("Original file size (bytes): ", input.Size())
+	fmt.Println("Compressed file size (bytes): ", output.Size())
 }

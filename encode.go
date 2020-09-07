@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/binary"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -66,9 +67,6 @@ func (e *Encoder) generateTree() {
 		e.List = append(e.List, node)
 	}
 	sort.Sort(nodeArr(e.List))
-	for _, v := range e.List {
-		fmt.Println(*v)
-	}
 
 	tmp := make(nodeArr, len(e.List))
 	copy(tmp, e.List)
@@ -79,9 +77,7 @@ func (e *Encoder) generateTree() {
 		tmp = tmp[:len(tmp)-1]
 		least2 = tmp[len(tmp)-1]
 		tmp = tmp[:len(tmp)-1]
-		parent := &Node{
-			Frequency: least1.Frequency + least2.Frequency,
-		}
+		parent := &Node{Frequency: least1.Frequency + least2.Frequency}
 		parent.Left = least2
 		parent.Right = least1
 		tmp = append(tmp, parent)
@@ -93,9 +89,56 @@ func (e *Encoder) generateTree() {
 
 	e.recHelper(e.Head, "")
 
+	//Print (char: bitstring) pairs
 	// for k, v := range e.Bitmap {
 	// 	fmt.Println(k, v)
 	// }
+
+	//Print (char: frequency) pairs
+	// for k, v := range e.Frequency {
+	// 	fmt.Println(k, v)
+	// }
+}
+
+func (e *Encoder) encode() {
+	data, err := ioutil.ReadFile(e.InputFile)
+
+	if err != nil {
+		fmt.Println("Could not open input file: " + e.InputFile)
+		os.Exit(1)
+	}
+
+	encodedFile := ""
+	reader := bufio.NewReader(strings.NewReader(string(data)))
+	for {
+		if c, _, err := reader.ReadRune(); err != nil {
+			if err == io.EOF {
+				break
+			} else {
+				log.Fatal(err)
+			}
+		} else {
+			encodedFile += e.Bitmap[string(c)]
+		}
+	}
+
+	//first 8 bits (1 byte) of file will be number of encoded data pairs
+	numNodes := uint8(len(e.List))
+	outf, _ := os.Create(e.OutputFile)
+	binary.Write(outf, binary.LittleEndian, numNodes)
+
+	//encoded char (character):int (frequency) pairs
+	for _, node := range e.List {
+		char := []byte(node.Character)[0]
+		freq := uint32(node.Frequency)
+		binary.Write(outf, binary.LittleEndian, char)
+		binary.Write(outf, binary.LittleEndian, freq)
+		//fmt.Println(char, freq)
+	}
+
+	//next 8 bits of file will be length of padding of last byte written to file
+	var difference uint8 = uint8(8 - (len(encodedFile) % 8))
+	binary.Write(outf, binary.LittleEndian, difference)
 }
 
 func (e *Encoder) recHelper(node *Node, built string) {
